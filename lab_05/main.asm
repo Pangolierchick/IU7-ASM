@@ -1,15 +1,21 @@
+.186
 extrn newline:near
 
 STK  SEGMENT PARA STACK 'STACK'
-        DB      200h DUP (0)
+        DB      300h DUP (0)
 STK  ENDS
 
 DSEG SEGMENT PARA PUBLIC 'DATA'
-        input_clm_str db "Input column number: $"
-        input_row_str db "Input row number: $"
-        row db 'F'
-        clm db 'F'
-        matrix db 9 * 9 dup (255)
+        input_clm_str       db "Input column number: $"
+        input_row_str       db "Input row number: $"
+        input_matrix_str    db "Input matrix:", 13, 10, '$'
+        row                 db ?
+        clm                 db ?
+        max_row             db 9
+        max_clm             db 9
+        matrix              db 9 * 9 dup (0F1h)
+        curr_clm            db ?
+        curr_row            db ?
 
 DSEG ENDS
 
@@ -24,7 +30,7 @@ input_row proc near
 
     sub ax, '0'
     mov row, al
-    
+
     ret
 
 input_row endp
@@ -41,74 +47,183 @@ input_clm proc near
 input_clm endp
 
 input_matrix proc near
-    mov ax, DSEG
-    mov ds, ax
+    mov dh, 0
 
-    mov al, row
-    mov bl, clm
+    input_matrix_out:
+        mov al, dh
+        mul max_row
+        mov bx, ax
+        mov si, 0
+        mov cx, 0
+        input_matrix_inner:
+            mov ah, 1
+            int 21h
+            sub ax, '0'
 
-    mul bl     ; getting size of matrix (row * clm)
+            mov matrix[bx][si], al
+            
+            inc cl
+            inc si
+            cmp cl, clm
+        jb input_matrix_inner
 
-    mov cx, ax ; number of iters to do
-    mov dx, 0  ; sort of i in for loop
-    mov si, offset matrix
-
-    while_input:
-        mov ah, 01h
-        int 21h
-
-        sub ax, '0'         ; from char to int
-        mov [ si ], al      ; setting value to matrix
-
-        inc dx              ; i++ actually
-        inc si              ; getting next elem
-        cmp dx, cx          
-    jb while_input          ; while dx < cx
+        pusha
+        call newline
+        popa
+    
+    inc dh
+    cmp dh, row
+    jb input_matrix_out
 
     ret
 input_matrix endp
 
+find_clm_sum proc
+    assume ds:DSEG
 
-del_clm proc near
-    mov al, row
-    mov bl, clm
+    mov dh, 0 ; i
+    mov cx, 0 ; sum
 
-    mul bl     ; getting size of matrix (row * clm)
+    mov ax, 0
+    mov al, curr_clm
+    mov si, ax
 
-    mov cl, clm
-    mov ch, row
-
-    mov dl, 0
-    mov dh, 0
-
-    mov si, offset matrix
     while_row:
-        mov dh, 0
+        mov ax, 0
+        mov al, dh
+        mul max_row
+        mov bx, ax
 
-        while_clm:
-            push si
-            
-            cmp dl, row
-        jb while_clm
+        mov ax, 0
+        mov al, matrix[bx][si]
+        add cx, ax
 
-        add si, row
-        cmp dh, clm
+        inc dh
+        cmp dh, row ; while ch < cl
     jb while_row
 
-    mov si, offset matrix
     ret
+find_clm_sum endp
+
+del_clm proc near
+    mov dh, 0 ; i
+
+    while_del_clm:
+        
+        mov curr_clm, dh
+
+        push dx
+        call find_clm_sum
+        pop dx
+        
+
+        mov al, cl
+        mov dl, 3
+
+        div dl
+
+        cmp ah, 0
+        je delete_column
+
+        inc dh
+        cmp dh, clm
+    jb while_del_clm
+
+
+    ret
+    delete_column:
+        call shift_column
+        ret
 del_clm endp
 
+shift_column proc near
+    mov dx, 0
+    mov cx, 0
+
+    shift_clm_out:
+        mov al, dh
+        mul max_row
+        mov bx, ax
+
+        mov cl, curr_clm
+        mov si, cx
+        shift_clm_int:
+            push ax
+            xor ax, ax
+
+            mov al, matrix[bx][si]
+            
+            push dx
+            mov di, si
+            inc di
+
+            mov dl, matrix[bx][di]
+            mov matrix[bx][si], dl
+
+            pop dx
+
+            mov matrix[bx][di], al
+
+            pop ax
+
+            inc si
+            inc cl
+            cmp cl, clm
+        jb shift_clm_int
+
+        inc dh
+        cmp dh, row
+    jb shift_clm_out
+
+    dec clm
+
+    ret
+shift_column endp
+
+print_matrix proc near
+    mov bl, 0
+    mov dh, 0
+
+    pr_matrix_out:
+        mov cl, 0
+
+        mov al, dh
+        mul max_row
+        mov bx, ax
+
+        mov si, 0
+
+        pr_matrix_inner:
+            push dx
+            mov dl, matrix[bx][si]
+            add dl, '0'
+            mov ah, 2
+            int 21h
+
+            mov dl, ' '
+            int 21h
+
+            pop dx
+            
+            inc si
+            inc cl
+            cmp cl, clm
+        jb pr_matrix_inner
+    
+        call newline
+        ; mov dl, 10
+        ; int 21h
+        
+        inc dh
+        cmp dh, row
+    jb pr_matrix_out
+
+    ret
+
+print_matrix endp
 main:
     mov ax, DSEG
     mov ds, ax
-
-    mov dx, offset input_clm_str
-    mov ah, 09h
-    int 21h
-
-    call input_clm
-    call newline
 
     mov dx, offset input_row_str
     mov ah, 09h
@@ -117,18 +232,26 @@ main:
     call input_row
     call newline
 
-    mov ah, 2
-    mov dl, clm
+    mov dx, offset input_clm_str
+    mov ah, 09h
     int 21h
 
+    call input_clm
+    call newline
     call newline
 
-    mov ah, 2
-    mov dl, row
+    mov dx, offset input_matrix_str
+    mov ah, 09h
     int 21h
 
-    call newline
     call input_matrix
+
+    call del_clm
+
+    ; call newline
+    ; call find_clm_sum
+
+    call print_matrix
 
     mov ah, 4ch
     int 21h
