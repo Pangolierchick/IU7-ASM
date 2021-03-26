@@ -9,6 +9,7 @@ DSEG SEGMENT PARA PUBLIC 'DATA'
         input_clm_str       db "Input column number: $"
         input_row_str       db "Input row number: $"
         input_matrix_str    db "Input matrix:", 13, 10, '$'
+        result              db "Result matrix:", 13, 10, '$'
         row                 db ?
         clm                 db ?
         max_row             db 9
@@ -248,8 +249,10 @@ main:
 
     call del_clm
 
-    ; call newline
-    ; call find_clm_sum
+    call newline
+    mov dx, offset result
+    mov ah, 09h
+    int 21h
 
     call print_matrix
 
