@@ -61,13 +61,13 @@ int main(void) {
     printf("\t\tTesting string len:\n\n");
 
     std_len = strlen(str);
-    len = strlen_asm(str);
+    len = strlen_asm64(str);
 
     printf("1. %s", IS_DONE(std_len == len));
     printf("\t%d\t%d\n", std_len, len);
 
     std_len = strlen(str + 5);
-    len = strlen_asm(str + 5);
+    len = strlen_asm64(str + 5);
 
     printf("2. %s", IS_DONE(std_len == len));
     printf("\t%d\t%d\n", std_len, len);
