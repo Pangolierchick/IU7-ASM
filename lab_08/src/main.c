@@ -6,7 +6,26 @@
 
 extern void _memmove(void *d, void *s, int l);
 
-int strlen_asm(const char *str) {
+size_t strlen_asm64(const char *str) {
+    size_t len = 0;
+
+    __asm__(    
+        "mov $0, %%al\n\t"
+        "mov %1, %%rdi\n\t"
+        "mov $-1, %%rcx\n\t"
+        "repne scasb\n\t"
+        "inc %%rcx\n\t"
+        "neg %%rcx\n\t"
+        "mov %%rcx, %0\n\t"
+        : "=r"(len)
+        : "r"(str)
+        : "%eax", "%ecx", "%rdi", "%al"
+        );
+
+    return len;
+}
+
+int strlen_asm32(const char *str) {
     int len = 0;
 
     __asm__(    
@@ -44,12 +63,14 @@ int main(void) {
     std_len = strlen(str);
     len = strlen_asm(str);
 
-    printf("1. %s\n", IS_DONE(std_len == len));
+    printf("1. %s", IS_DONE(std_len == len));
+    printf("\t%d\t%d\n", std_len, len);
 
     std_len = strlen(str + 5);
     len = strlen_asm(str + 5);
 
-    printf("2. %s\n", IS_DONE(std_len == len));
+    printf("2. %s", IS_DONE(std_len == len));
+    printf("\t%d\t%d\n", std_len, len);
 
     printf("\t\tTesting memmove:\n\n");
 

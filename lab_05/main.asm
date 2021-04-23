@@ -1,4 +1,3 @@
-.186
 extrn newline:near
 
 STK  SEGMENT PARA STACK 'STACK'
@@ -68,9 +67,13 @@ input_matrix proc near
             cmp cl, clm
         jb input_matrix_inner
 
-        pusha
+        push ax
+        push dx
+        
         call newline
-        popa
+        
+        pop ax
+        pop dx
     
     inc dh
     cmp dh, row

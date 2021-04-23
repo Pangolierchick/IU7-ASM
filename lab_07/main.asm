@@ -21,8 +21,6 @@ my_int_handler proc
     push es
     push ds
 
-    ;pushf
-
     mov ah, 02h
     int 1ah
 
@@ -48,7 +46,6 @@ my_int_handler proc
         mov speed, 1fh
 
     quit:
-     ;   popf
         pop ds
         pop es
 
