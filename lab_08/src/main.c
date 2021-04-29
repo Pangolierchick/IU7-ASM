@@ -19,7 +19,7 @@ size_t strlen_asm64(const char *str) {
         "mov %%rcx, %0\n\t"
         : "=r"(len)
         : "r"(str)
-        : "%eax", "%ecx", "%rdi", "%al"
+        : "%rcx", "%rdi", "%al"
         );
 
     return len;
