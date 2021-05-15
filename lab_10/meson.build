@@ -1,4 +1,4 @@
-project('lab_10', ['c', 'cpp'], default_options: ['c_std=c99', 'cxx_std=c++17'])
+project('lab_10', ['c', 'cpp'], default_options: ['c_std=c99', 'c++_std=c++17'])
 
 incdir = include_directories('vector')
 
