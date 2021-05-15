@@ -17,7 +17,7 @@ int main(void ) {
     vec_val res = scalar_product_vector(v1, v2);
     printf("res = %f\n", res);
     
-    vec_val sse = scalar_product_sse_vector(v1, v2);
+    vec_val sse = scalar_product_sse_vector2(v1, v2);
     printf("res = %f\n", sse);
 
     destroy_vector(v1);
