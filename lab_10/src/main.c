@@ -3,8 +3,8 @@
 #include "vector.h"
 
 int main(void ) {
-    vector_t v1 = new_vector(12);
-    vector_t v2 = new_vector(12);
+    vector_t v1 = new_avectorf32(12);
+    vector_t v2 = new_avectorf32(12);
 
     // randomize_vector(v1);
     // randomize_vector(v2);
