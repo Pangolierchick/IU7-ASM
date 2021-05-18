@@ -23,7 +23,7 @@ vector_t new_avectorf32(size_t size) {
     vector_t vec = calloc(1, sizeof(struct vector_s) + sizeof(vec_val) * a_size);
     
     if (vec) {
-        vec->size = size;
+        vec->size = a_size;
     }
 
     return vec;
