@@ -5,12 +5,17 @@ extern "C" {
     #include "vector.h"
 }
 
+void fill_vec(vector_t vec) {
+    for (size_t i = 0; i < vec->size; i++)
+        vec->vec[i] = i;
+}
+
 static void bench_default_scalar(benchmark::State& state) {
     vector_t v1 = new_avectorf32(72);
     vector_t v2 = new_avectorf32(72);
 
-    randomize_vector(v1);
-    randomize_vector(v2);
+    fill_vec(v1);
+    fill_vec(v2);
 
     for (auto _ : state) {
         while (state.KeepRunning()) {
@@ -28,8 +33,8 @@ static void bench_sse_scalar(benchmark::State& state) {
     vector_t v1 = new_avectorf32(72);
     vector_t v2 = new_avectorf32(72);
 
-    randomize_vector(v1);
-    randomize_vector(v2);
+    fill_vec(v1);
+    fill_vec(v2);
 
     for (auto _ : state) {
         while (state.KeepRunning()) {
@@ -47,8 +52,8 @@ static void bench_sse_scalar2(benchmark::State& state) {
     vector_t v1 = new_avectorf32(72);
     vector_t v2 = new_avectorf32(72);
 
-    randomize_vector(v1);
-    randomize_vector(v2);
+    fill_vec(v1);
+    fill_vec(v2);
 
     for (auto _ : state) {
         while (state.KeepRunning()) {
